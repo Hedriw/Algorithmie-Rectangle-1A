@@ -147,12 +147,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CommonSolution.h" />
     <ClInclude Include="FileRead.h" />
+    <ClInclude Include="Solution1.h" />
+    <ClInclude Include="Solution2.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CommunSolution.cpp" />
     <ClCompile Include="FileRead.cpp" />
+    <ClCompile Include="Solution1.cpp" />
+    <ClCompile Include="Solution2.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
