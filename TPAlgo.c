@@ -3,6 +3,8 @@
 #include <time.h>
 #include <wctype.h>
 
+#define WHITE_CASE 0
+#define BLACK_CASE 1
 #define ASCII_0 48
 #define ASCII_1 49
 #define ASCII_9 57
@@ -13,6 +15,11 @@
 #define ERROR_SIZE_VALUES_ZERO -4
 #define SUCCES_FILE 1
 #define DEFAULT_ALGORITHM "1"
+
+typedef struct tuple tuple;
+typedef struct stack stack;
+
+
 //COMMON SOLUTION
 
 int ContainsBlack(int *map[],int lCursor,int cCursor,int lSize,int cSize)
@@ -26,7 +33,7 @@ int ContainsBlack(int *map[],int lCursor,int cCursor,int lSize,int cSize)
 	{
 		for (int column = cCursor; column < cSize + cCursor; column++)
 		{
-			if (map[line][column] == 1)
+			if (map[line][column] == BLACK_CASE)
 				return 1;
 		}
 	}
@@ -41,16 +48,6 @@ int CalculSize(int **map,int lCursor,int cCursor,int lSize,int cSize)
 	}
 
 	return 0;
-}
-void Copy(int *map[], int lCursor, int cCursor, int lSize, int cSize, int *underMap[])
-{
-	for (int line = 0; line <lSize; line++)
-	{
-		for (int column = 0; column <cSize; column++)
-		{
-			underMap[line][column] = map[line + lCursor][column + cCursor];
-		}
-	}
 }
 
 int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCursor,int cCursor)
@@ -73,7 +70,225 @@ int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCur
 	}
 	return maxSize;
 }
+//SOLUTION 4
+struct tuple{
+	int position;
+	int height;
+};
+tuple _tuple(int position,int height)
+{
+	tuple new_tuple;
+	new_tuple.position = position;
+	new_tuple.height= height;
+	return new_tuple;
+}
 
+struct stack {
+    int size;
+    int curr_pos;
+    tuple *array;
+};
+stack* _stack(int p_size){
+  stack* stack = malloc(sizeof(stack));
+  stack->array = malloc(p_size*sizeof(tuple));
+  stack->size = p_size;
+  stack->curr_pos = -1;
+  return stack;
+}
+void resize(stack *stack,int new_size){
+  tuple *tmp = malloc(new_size*sizeof(tuple));
+  for(int i = 0;i<=stack->curr_pos;i++){
+    tmp[i] = stack->array[i];
+  }
+  free(stack->array);
+  stack->array = tmp;
+  stack->size = new_size;
+}
+int _isEmpty(stack *stack){
+  if(stack!=NULL){
+    if(stack->curr_pos==-1) return 1;
+  }
+  return 0;
+}
+tuple _pop(stack* stack){
+  if(!_isEmpty(stack)){
+		stack->curr_pos--;
+		return stack->array[stack->curr_pos+1];
+  }
+	return _tuple(0,0);
+}
+int _push(stack* stack, int position,int height){
+  if(stack!=NULL){
+    if(stack->curr_pos+1>=stack->size){
+      int new_size = stack->size * 2;
+      resize(stack,new_size);
+    }
+      stack->array[stack->curr_pos+1]=_tuple(position,height);
+      stack->curr_pos++;
+  }
+}
+
+int TupleSize(tuple t,int currentPosition)
+{
+	return  (currentPosition-t.position)*t.height;
+}
+void print_stack(stack* stack){
+  if(stack!=NULL){
+    printf("[ ");
+    for(int i = 0;i<=stack->curr_pos;i++){
+      printf("Pos:%i Height:%i ",stack->array[i].position,stack->array[i].height);
+    }
+    printf("]\n");
+  }
+}
+int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int currentColumnSize)
+{
+	int maxSize=0;
+	tuple lastTuple = _pop(stack);
+	tuple currentTuple = lastTuple;
+	while(currentColumnSize<currentTuple.height)
+	{
+		int size = TupleSize(currentTuple,currentColumn);
+		if(maxSize<size)
+		{
+			maxSize = size;
+		}
+		lastTuple = currentTuple;
+		currentTuple = _pop(stack);
+	}
+	_push(stack,currentTuple.position,currentTuple.height);
+	if(lastColumnSize>0 && currentColumnSize>0)
+	{
+		_push(stack,lastTuple.position,currentColumnSize);
+	}
+
+	return maxSize;
+}
+int Solution4(int *map[], int widht, int height)
+{
+	int maxSize = 0;
+	int *lineMap =(int *)malloc(widht * sizeof(int));
+	//Cleaning residual memory
+	for(int i = 0;i<widht;i++)
+		lineMap[i]=0;
+	stack* stack= _stack(widht);
+	for (int line = 0; line < height; line++)
+	{
+		//Calculate lineMap
+		for (int column = 0; column < widht; column++)
+		{
+			if(map[line][column]==BLACK_CASE)
+			{
+				lineMap[column] = 0;
+			}
+			else
+			{
+				lineMap[column]++;
+			}
+		}
+		//Calculate size current lineMap
+		int lastColumnSize = 0;
+		for(int column = 0;column<widht;column++)
+		{
+			//Cas où la hauteur de la nouvelle colonne est plus grande que la précédente
+			printf("LastH:%i, CurrentH:%i\n",lastColumnSize,lineMap[column]);
+			if(lastColumnSize < lineMap[column])
+			{
+				_push(stack,column,lineMap[column]);
+			}
+			else
+			{
+				printf("Pop time\n");
+				print_stack(stack);
+				int size = CalculSizeSolution4(stack,column,lastColumnSize,lineMap[column]);
+				print_stack(stack);
+				printf("Size:%i\n",size);
+				if(size>maxSize)
+					maxSize = size;
+			}
+			lastColumnSize = lineMap[column];
+		}
+		printf("\n\n");
+		int size = CalculSizeSolution4(stack,widht,0,0);
+		if(size>maxSize)
+			maxSize = size;
+	}
+	free(lineMap);
+	return maxSize;
+}
+//SOLUTION 3
+int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight)
+{
+	int size = 0;
+	int smallestNumberLine = maxHeight;
+	int lastBlackCase = -1;
+	//Reading left to right
+	for(int column = 0;column<=currentColumn;column++)
+	{
+		int tempSize = 0;
+		if(lineMap[column]==0)
+		{
+			lastBlackCase = column;
+		}
+		else
+		{
+			if(lineMap[column]<smallestNumberLine)
+				smallestNumberLine = lineMap[column];
+			tempSize = smallestNumberLine*(column-lastBlackCase);
+		}
+		if(tempSize>size)
+			size=tempSize;
+	}
+	//Reset values
+	smallestNumberLine = maxHeight;
+	lastBlackCase = -1;
+	//Reading right to left
+	for(int column = currentColumn;column>=0;column--)
+	{
+		int tempSize = 0;
+		if(lineMap[column]==0)
+		{
+			lastBlackCase = column;
+		}
+		else
+		{
+			if(lineMap[column]<smallestNumberLine)
+				smallestNumberLine = lineMap[column];
+			tempSize = smallestNumberLine*(currentColumn-column-lastBlackCase);
+		}
+		if(tempSize>size)
+			size=tempSize;
+	}
+	return size;
+}
+
+int Solution3(int *map[], int widht, int height)
+{
+	int maxSize = 0;
+	int *lineMap =(int *)malloc(widht * sizeof(int));
+	for(int i = 0;i<widht;i++)
+		lineMap[i]=0;
+	for (int line = 0; line < height; line++)
+	{
+		for (int column = 0; column < widht; column++)
+		{
+			int size = 0;
+			if(map[line][column]==BLACK_CASE)
+			{
+				lineMap[column] = 0;
+			}
+			else
+			{
+				lineMap[column]++;
+			}
+			size=CalculSizeSolution3(lineMap,column,height);
+			if (size > maxSize)
+				maxSize = size;
+		}
+	}
+	free(lineMap);
+	return maxSize;
+}
 //SOLUTION 2
 int CalculMaxSizeCurrentCursor(int ** map, int width, int height, int lCursor, int cCursor)
 {
@@ -94,7 +309,6 @@ int CalculMaxSizeCurrentCursor(int ** map, int width, int height, int lCursor, i
 }
 	return maxSize;
 }
-
 int Solution2(int **map, int widht, int height)
 {
 	int maxSize = 0;
@@ -201,7 +415,6 @@ int GetMap(int *map[],FILE* file, int lSize, int cSize)
 	int conform = 1;
 	int firstreturn = 0;
 	int caracNumber = 0;
-
 	if (file != NULL) {
 		/*Rewinding file pointer to the start*/
 		rewind(file);
@@ -238,7 +451,6 @@ int GetMap(int *map[],FILE* file, int lSize, int cSize)
 				}
 			} while (1);
 		}
-		fclose(file);
 		return 1;
 	}
 	else
@@ -350,6 +562,16 @@ void StartCalculate(char * fileName,char * algoNumber)
 					case '2' :
 					{
 						size = Solution2(map,width,height);
+						break;
+					}
+					case '3':
+					{
+						size = Solution3(map,width,height);
+						break;
+					}
+					case '4':
+					{
+						size = Solution4(map,width,height);
 						break;
 					}
 					default :
