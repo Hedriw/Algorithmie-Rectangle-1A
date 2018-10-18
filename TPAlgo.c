@@ -116,7 +116,7 @@ void print_stack(stack* stack){
     printf("]\n");
   }
 }
-int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int currentColumnSize)
+int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int currentColumnSize,tuple *columCoord)
 {
 	int maxSize=0;
 	tuple lastTuple = _pop(stack);
@@ -127,6 +127,8 @@ int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int cu
 		if(maxSize<size)
 		{
 			maxSize = size;
+			columCoord->position = currentTuple.position;
+			columCoord->height = currentTuple.height;
 		}
 		lastTuple = currentTuple;
 		currentTuple = _pop(stack);
@@ -166,37 +168,43 @@ int Solution4(int *map[], int widht, int height,tuple * coords)
 		for(int column = 0;column<widht;column++)
 		{
 			//Cas où la hauteur de la nouvelle colonne est plus grande que la précédente
-			printf("LastH:%i, CurrentH:%i\n",lastColumnSize,lineMap[column]);
+			// printf("LastH:%i, CurrentH:%i\n",lastColumnSize,lineMap[column]);
 			if(lastColumnSize < lineMap[column])
 			{
 				_push(stack,column,lineMap[column]);
 			}
 			else
 			{
-				printf("Pop time\n");
-				print_stack(stack);
-				int size = CalculSizeSolution4(stack,column,lastColumnSize,lineMap[column]);
-				print_stack(stack);
-				printf("Size:%i\n",size);
+				// printf("Pop time\n");
+				// print_stack(stack);
+				tuple tempPosition;
+				int size = CalculSizeSolution4(stack,column,lastColumnSize,lineMap[column],&tempPosition);
+				// print_stack(stack);
+				// printf("Size:%i\n",size);
 				if(size>maxSize)
 				{
 					maxSize = size;
-					coords->position = column;
-					coords->height = line;
+					coords->position = tempPosition.position;
+					coords->height = line -(tempPosition.height-1);
 				}
 			}
 			lastColumnSize = lineMap[column];
 		}
-		printf("\n\n");
-		int size = CalculSizeSolution4(stack,widht,0,0);
+		// printf("\n\n");
+		tuple tempPosition;
+		int size = CalculSizeSolution4(stack,widht,0,0,&tempPosition);
 		if(size>maxSize)
+		{
 			maxSize = size;
+			coords->position = tempPosition.position;
+			coords->height = line -(tempPosition.height-1);
+		}
 	}
 	free(lineMap);
 	return maxSize;
 }
 //SOLUTION 3
-int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight)
+int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *columnCoord)
 {
 	int size = 0;
 	int smallestNumberLine = maxHeight;
@@ -216,7 +224,11 @@ int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight)
 			tempSize = smallestNumberLine*(column-lastBlackCase);
 		}
 		if(tempSize>size)
+		{
 			size=tempSize;
+			columnCoord->position = (currentColumn-column);
+			columnCoord->height = smallestNumberLine;
+		}
 	}
 	//Reset values
 	smallestNumberLine = maxHeight;
@@ -238,8 +250,9 @@ int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight)
 		if(tempSize>size)
 		{
 			size=tempSize;
+			columnCoord->position = column;
+			columnCoord->height = smallestNumberLine;
 		}
-
 	}
 	return size;
 }
@@ -263,12 +276,14 @@ int Solution3(int *map[], int widht, int height,tuple * coords)
 			{
 				lineMap[column]++;
 			}
-			size=CalculSizeSolution3(lineMap,column,height);
+			tuple tempPosition;
+			size=CalculSizeSolution3(lineMap,column,height,&tempPosition);
 			if (size > maxSize)
 			{
 				maxSize = size;
-				coords->position = column;
-				coords->height = line;
+				printf("Column :%i Size:%i\n",column,size);
+				coords->position = tempPosition.position;
+				coords->height = line - (tempPosition.height-1);
 			}
 		}
 	}
@@ -612,7 +627,7 @@ void StartCalculate(char * fileName,char * algoNumber)
 					printf("Unexpected algorithm number.\n");
 				}
         printf("Taille max : %i\n", size);
-				printf("Found at Coordinates (%i,%i)\n",coords.position,coords.height);
+				printf("Found at Coordinates Column :%i Line:%i)\n",coords.position,coords.height);
 				printf("Size is : (%i x %i)\n",size_tuple.position,size_tuple.height);
         for (int l = 0; l < height; l++) {
           free(map[l]);
