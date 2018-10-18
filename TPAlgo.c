@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <wctype.h>
+#include <string.h>
+#include <ctype.h>
+#include <inttypes.h>
 
 #define WHITE_CASE 0
 #define BLACK_CASE 1
@@ -21,6 +24,29 @@ typedef struct stack stack;
 
 
 //COMMON SOLUTION
+
+int ** getRandomMap(int height,int width,float percent)
+{
+  int ** map;
+  srand(time(NULL));
+  map = (int **)malloc(height*sizeof(int*));
+  for (int l = 0; l < height; l++)
+  {
+   map[l]=(int*)malloc(width*sizeof(int));
+  }
+  for(int cursor_height = 0;cursor_height<height;cursor_height++)
+  {
+    for(int cursor_width = 0;cursor_width<width;cursor_width++)
+    {
+      int r = rand()%100;
+      if(r<(100-percent))
+        map[cursor_height][cursor_width] = 1;
+      else
+        map[cursor_height][cursor_width] = 0;
+    }
+  }
+  return map;
+}
 
 int ContainsBlack(int *map[],int lCursor,int cCursor,int lSize,int cSize)
 {
@@ -204,7 +230,7 @@ int Solution4(int *map[], int widht, int height,tuple * coords)
 	return maxSize;
 }
 //SOLUTION 3
-int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *columnCoord)
+int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *columnCoord,tuple *tupleSize)
 {
 	int size = 0;
 	int smallestNumberLine = maxHeight;
@@ -228,6 +254,8 @@ int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *colu
 			size=tempSize;
 			columnCoord->position = (currentColumn-column);
 			columnCoord->height = smallestNumberLine;
+			tupleSize->height = smallestNumberLine;
+			tupleSize->position =(column-lastBlackCase);
 		}
 	}
 	//Reset values
@@ -257,7 +285,7 @@ int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *colu
 	return size;
 }
 
-int Solution3(int *map[], int widht, int height,tuple * coords)
+int Solution3(int *map[], int widht, int height,tuple * coords,tuple *sizeTuple)
 {
 	int maxSize = 0;
 	int *lineMap =(int *)malloc(widht * sizeof(int));
@@ -277,13 +305,15 @@ int Solution3(int *map[], int widht, int height,tuple * coords)
 				lineMap[column]++;
 			}
 			tuple tempPosition;
-			size=CalculSizeSolution3(lineMap,column,height,&tempPosition);
+			tuple tmpSize;
+			size = CalculSizeSolution3(lineMap,column,height,&tempPosition,&tmpSize);
 			if (size > maxSize)
 			{
 				maxSize = size;
-				printf("Column :%i Size:%i\n",column,size);
 				coords->position = tempPosition.position;
 				coords->height = line - (tempPosition.height-1);
+				sizeTuple->height = tmpSize.height;
+				sizeTuple->position = tmpSize.position;
 			}
 		}
 	}
@@ -291,7 +321,7 @@ int Solution3(int *map[], int widht, int height,tuple * coords)
 	return maxSize;
 }
 //SOLUTION 2
-int CalculMaxSizeCurrentCursor(int ** map, int width, int height, int lCursor, int cCursor, tuple * size_tuple)
+int CalculMaxSizeCurrentCursor(int ** map, int width, int height, int lCursor, int cCursor, tuple * sizeTuple)
 {
 	//printf("Cursor is at (%i,%i)\n",lCursor,cCursor);
 	int maxSize = 0;
@@ -306,8 +336,8 @@ int CalculMaxSizeCurrentCursor(int ** map, int width, int height, int lCursor, i
 			int size = CalculSize(map,lCursor,cCursor,lSize,cSize);
 			if(size>maxSize)
 			{
-				size_tuple->height = lSize;
-				size_tuple->position = cSize;
+				sizeTuple->height = lSize;
+				sizeTuple->position = cSize;
 				maxSize=size;
 			}
 
@@ -559,7 +589,72 @@ void generate(int *map[],int widht,int height)
       }
   }
 }
+int stringIsNumber(char * stringToTest)
+{
+	size_t strSize = strlen(stringToTest);
+	for(int i = 0;i<strSize;i++)
+	{
+		if(!isdigit(stringToTest[i]))
+			return 0;
+	}
+	return 1;
+}
 
+void startStatistics(char * maxSize)
+{
+	if(!stringIsNumber(maxSize))
+	{
+
+		printf("/!\\ Size is not a number.\n");
+		exit(1);
+	}
+	else
+	{
+		int intSize =  strtoimax(maxSize,NULL,10);
+		for(int i = 0;i<intSize;i++)
+		{
+			tuple finalSizeTuple;
+			tuple finalCoords;
+			int ** randMap = getRandomMap(i,i,80);
+      printf("Now working on map : \n");
+      ReadMap(randMap,i,i);
+			clock_t time1;
+			time1 = clock();
+			int res1 = Solution1(randMap,i,i,&finalCoords,&finalSizeTuple);
+			printf("[S1]Found at Coordinates Column :%i Line:%i)\n",finalCoords.position,finalCoords.height);
+			printf("[S1]Size is : %i\n",res1);
+			time1 = clock() - time1;
+			double timeTaken1 = ((double)time1)/CLOCKS_PER_SEC;
+			clock_t time2;
+			time2 = clock();
+			int res2 = Solution2(randMap,i,i,&finalCoords,&finalSizeTuple);
+			time2 = clock() - time2;
+			double timeTaken2 = ((double)time2)/CLOCKS_PER_SEC;
+			printf("[S2]Found at Coordinates Column :%i Line:%i)\n",finalCoords.position,finalCoords.height);
+			printf("[S2]Size is : %i\n",res2);
+			clock_t time3;
+			time3 = clock();
+			int res3 = Solution3(randMap,i,i,&finalCoords,&finalSizeTuple);
+			time3 = clock() - time3;
+			double timeTaken3 = ((double)time3)/CLOCKS_PER_SEC;
+			printf("[S3]Found at Coordinates Column :%i Line:%i)\n",finalCoords.position,finalCoords.height);
+			printf("[S3]Size is : %i\n",res3);
+			clock_t time4;
+			time4 = clock();
+			int res4 = Solution4(randMap,i,i,&finalCoords);
+			printf("[S4]Found at Coordinates Column :%i Line:%i)\n",finalCoords.position,finalCoords.height);
+			printf("[S4]Size is : %i\n",res4);
+			time4 = clock() - time4;
+			double timeTaken4 = ((double)time4)/CLOCKS_PER_SEC;
+			printf("---------\n");
+			//printf("[S1]: Time for (%ix%i) : %g\n",i,i,timeTaken1);
+			//printf("[S2]: Time for (%ix%i) : %g\n",i,i,timeTaken2);
+			//printf("[S3]: Time for (%ix%i) : %g\n",i,i,timeTaken3);
+			//printf("[S4]: Time for (%ix%i) : %g\n",i,i,timeTaken4);
+		}
+		exit(1);
+	}
+}
 void StartCalculate(char * fileName,char * algoNumber)
 {
   //Récupération du dallage dans un fichier
@@ -599,23 +694,23 @@ void StartCalculate(char * fileName,char * algoNumber)
       case SUCCES_FILE:
       {
 				tuple coords = _tuple(-1,-1);
-				tuple size_tuple = _tuple(0,0);
+				tuple sizeTuple = _tuple(0,0);
 				int size = 0;
         ReadMap(map,height,width);
 				switch (algoNumber[0]) {
 					case '1' :
 					{
-						size = Solution1(map,width,height,&coords,&size_tuple);
+						size = Solution1(map,width,height,&coords,&sizeTuple);
 						break;
 					}
 					case '2' :
 					{
-						size = Solution2(map,width,height,&coords,&size_tuple);
+						size = Solution2(map,width,height,&coords,&sizeTuple);
 						break;
 					}
 					case '3':
 					{
-						size = Solution3(map,width,height,&coords);
+						size = Solution3(map,width,height,&coords,&sizeTuple);
 						break;
 					}
 					case '4':
@@ -628,7 +723,7 @@ void StartCalculate(char * fileName,char * algoNumber)
 				}
         printf("Taille max : %i\n", size);
 				printf("Found at Coordinates Column :%i Line:%i)\n",coords.position,coords.height);
-				printf("Size is : (%i x %i)\n",size_tuple.position,size_tuple.height);
+				printf("Size is : (%i x %i)\n",sizeTuple.position,sizeTuple.height);
         for (int l = 0; l < height; l++) {
           free(map[l]);
         free(map);
@@ -640,8 +735,29 @@ void StartCalculate(char * fileName,char * algoNumber)
 
 int main(int argc, char *argv[])
 {
-	if(argc==3){
-		StartCalculate(argv[1],argv[2]);
+	if(argc==3)
+	{
+		if(argv[1][0]=='-')
+		{
+			switch (toupper(argv[1][1]))
+			{
+				case 'S' :
+				{
+					startStatistics(argv[2]);
+					break;
+				}
+				case 'R' :
+				{
+					// here generate  map and call StartCalculate with ./exe -R 3 <-
+					exit(1);
+					break;
+				}
+			}
+		}
+		else
+		{
+			StartCalculate(argv[1],argv[2]);
+		}
 	}
 	else if(argc==2){
 		printf("No algoNumber specified. Algorithm n°%s by default.\n",DEFAULT_ALGORITHM);
