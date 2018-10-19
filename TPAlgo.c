@@ -230,7 +230,7 @@ int Solution4(int *map[], int widht, int height,tuple * coords)
 	return maxSize;
 }
 //SOLUTION 3
-int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *columnCoord,tuple *tupleSize)
+int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *columnCoord,tuple* rectSize)
 {
 	int size = 0;
 	int smallestNumberLine = maxHeight;
@@ -254,13 +254,13 @@ int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *colu
 			size=tempSize;
 			columnCoord->position = (currentColumn-column);
 			columnCoord->height = smallestNumberLine;
-			tupleSize->height = smallestNumberLine;
-			tupleSize->position =(column-lastBlackCase);
+      rectSize->position = (column-lastBlackCase);
+      rectSize->height = smallestNumberLine;
 		}
 	}
 	//Reset values
 	smallestNumberLine = maxHeight;
-	lastBlackCase = -1;
+	lastBlackCase = currentColumn+1;
 	//Reading right to left
 	for(int column = currentColumn;column>=0;column--)
 	{
@@ -272,16 +272,21 @@ int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *colu
 		else
 		{
 			if(lineMap[column]<smallestNumberLine)
-				smallestNumberLine = lineMap[column];
-			tempSize = smallestNumberLine*(currentColumn-column-lastBlackCase);
+      {
+        smallestNumberLine = lineMap[column];
+      }
+			tempSize = smallestNumberLine*(lastBlackCase-column);
 		}
 		if(tempSize>size)
 		{
 			size=tempSize;
 			columnCoord->position = column;
 			columnCoord->height = smallestNumberLine;
+      rectSize->position = (lastBlackCase-column);
+      rectSize->height = smallestNumberLine;
 		}
 	}
+  // printf("\n\n");
 	return size;
 }
 
@@ -305,15 +310,15 @@ int Solution3(int *map[], int widht, int height,tuple * coords,tuple *sizeTuple)
 				lineMap[column]++;
 			}
 			tuple tempPosition;
-			tuple tmpSize;
-			size = CalculSizeSolution3(lineMap,column,height,&tempPosition,&tmpSize);
+      tuple tempSize;
+			size = CalculSizeSolution3(lineMap,column,height,&tempPosition,&tempSize);
 			if (size > maxSize)
 			{
 				maxSize = size;
 				coords->position = tempPosition.position;
 				coords->height = line - (tempPosition.height-1);
-				sizeTuple->height = tmpSize.height;
-				sizeTuple->position = tmpSize.position;
+				sizeTuple->height = tempSize.height;
+				sizeTuple->position = tempSize.position;
 			}
 		}
 	}
