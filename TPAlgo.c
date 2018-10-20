@@ -216,18 +216,18 @@ int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int cu
 
 	return maxSize;
 }
-int Solution4(int *map[], int widht, int height,tuple * coords,tuple * rectSize)
+int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize)
 {
 	int maxSize = 0;
-	int *lineMap =(int *)malloc(widht * sizeof(int));
+	int *lineMap =(int *)malloc(width * sizeof(int));
 	//Cleaning residual memory
-	for(int i = 0;i<widht;i++)
+	for(int i = 0;i<width;i++)
 	lineMap[i]=0;
-	stack* stack= _stack(widht);
+	stack* stack= _stack(width);
 	for (int line = 0; line < height; line++)
 	{
 		//Calculate lineMap
-		for (int column = 0; column < widht; column++)
+		for (int column = 0; column < width; column++)
 		{
 			if(map[line][column]==BLACK_CASE)
 			{
@@ -240,7 +240,7 @@ int Solution4(int *map[], int widht, int height,tuple * coords,tuple * rectSize)
 		}
 		//Calculate size current lineMap
 		int lastColumnSize = 0;
-		for(int column = 0;column<widht;column++)
+		for(int column = 0;column<width;column++)
 		{
 			//Cas où la hauteur de la nouvelle colonne est plus grande que la précédente
 			if(lastColumnSize < lineMap[column])
@@ -265,7 +265,7 @@ int Solution4(int *map[], int widht, int height,tuple * coords,tuple * rectSize)
 		}
 		tuple tempPosition;
 		tuple tempSize;
-		int size = CalculSizeSolution4(stack,widht,0,0,&tempPosition,&tempSize);
+		int size = CalculSizeSolution4(stack,width,0,0,&tempPosition,&tempSize);
 		if(size>maxSize)
 		{
 			maxSize = size;
@@ -340,15 +340,15 @@ int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *colu
 	return size;
 }
 
-int Solution3(int *map[], int widht, int height,tuple * coords,tuple *sizeTuple)
+int Solution3(int *map[], int width, int height,tuple * coords,tuple *sizeTuple)
 {
 	int maxSize = 0;
-	int *lineMap =(int *)malloc(widht * sizeof(int));
-	for(int i = 0;i<widht;i++)
+	int *lineMap =(int *)malloc(width * sizeof(int));
+	for(int i = 0;i<width;i++)
 	lineMap[i]=0;
 	for (int line = 0; line < height; line++)
 	{
-		for (int column = 0; column < widht; column++)
+		for (int column = 0; column < width; column++)
 		{
 			int size = 0;
 			if(map[line][column]==BLACK_CASE)
@@ -380,8 +380,6 @@ int CalculMaxSizeCurrentCursor(int ** map, int width, int height, int lCursor, i
 {
 	//printf("Cursor is at (%i,%i)\n",lCursor,cCursor);
 	int maxSize = 0;
-	int test = 0;
-	int one_cumul = 0;
 	for (int line = lCursor; line < height; line++)
 	{
 		for (int column = cCursor; column < width; column++)
@@ -401,7 +399,7 @@ int CalculMaxSizeCurrentCursor(int ** map, int width, int height, int lCursor, i
 	return maxSize;
 }
 
-int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCursor,int cCursor,tuple * size_tuple)
+int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCursor,int cCursor,tuple * sizeTuple)
 {
 	int maxSize = 0;
 	int one_cumul = 0;
@@ -416,8 +414,8 @@ int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCur
 			width = column;
 			if(size>maxSize)
 			{
-				size_tuple->height = lSize;
-				size_tuple->position = cSize;
+				sizeTuple->height = lSize;
+				sizeTuple->position = cSize;
 				maxSize=size;
 			}
 		}
@@ -425,53 +423,53 @@ int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCur
 	return maxSize;
 }
 
-int Solution2(int **map, int widht, int height,tuple *coords,tuple *size_tuple)
+int Solution2(int **map, int width, int height,tuple *coords,tuple *sizeTuple)
 {
 	int maxSize = 0;
 	int tmpWidth;
 	int tmpHeight;
 	for (int line = 0; line < height; line++)
 	{
-		for (int column = 0; column < widht; column++)
+		for (int column = 0; column < width; column++)
 		{
-			int size = CalculMaxSizeCurrentCursorOptimized(map, widht, height, line, column, size_tuple);
+			int size = CalculMaxSizeCurrentCursorOptimized(map, width, height, line, column, sizeTuple);
 			if (size > maxSize)
 			{
 				maxSize = size;
 				coords->position = column;
 				coords->height = line;
-				tmpWidth = size_tuple->position;
-				tmpHeight = size_tuple->height;
+				tmpWidth = sizeTuple->position;
+				tmpHeight = sizeTuple->height;
 			}
 		}
 	}
-	size_tuple->position = tmpWidth;
-	size_tuple->height = tmpHeight;
+	sizeTuple->position = tmpWidth;
+	sizeTuple->height = tmpHeight;
 	return maxSize;
 }
 
-int Solution1(int **map, int widht, int height, tuple *coords,tuple *size_tuple)
+int Solution1(int **map, int width, int height, tuple *coords,tuple *sizeTuple)
 {
 	int tmpHeight;
 	int tmpWidth;
 	int maxSize = 0;
 	for (int line = 0; line < height; line++)
 	{
-		for (int column = 0; column < widht; column++)
+		for (int column = 0; column < width; column++)
 		{
-			int size = CalculMaxSizeCurrentCursor(map, widht, height, line, column,size_tuple);
+			int size = CalculMaxSizeCurrentCursor(map, width, height, line, column,sizeTuple);
 			if (size > maxSize)
 			{
 				maxSize = size;
-				tmpWidth = size_tuple->position;
-				tmpHeight = size_tuple->height;
+				tmpWidth = sizeTuple->position;
+				tmpHeight = sizeTuple->height;
 				coords->position = column;
 				coords->height = line;
 			}
 		}
 	}
-	size_tuple->height =tmpHeight;
-	size_tuple->position =tmpWidth;
+	sizeTuple->height =tmpHeight;
+	sizeTuple->position =tmpWidth;
 	return maxSize;
 }
 
@@ -546,8 +544,6 @@ void ReadMap(int *map[], int lSize, int cSize)
 int GetMap(int *map[],FILE* file, int lSize, int cSize)
 {
 	int carac;
-	int conform = 1;
-	int firstreturn = 0;
 	int caracNumber = 0;
 	if (file != NULL) {
 		/*Rewinding file pointer to the start*/
@@ -630,20 +626,6 @@ int ** getMapFromFile(char * fileName,int* width, int* height,int *error)
 	return map;
 }
 
-//
-void generate(int *map[],int widht,int height)
-{
-	for(int line = 0;line <height;line++)
-	{
-		for (int colum = 0; colum < widht; colum++)
-		{
-			int nb =0;
-			if(line==colum)
-			nb = 1;
-			map[line][colum]=nb;
-		}
-	}
-}
 int stringIsNumber(char * stringToTest)
 {
 	size_t strSize = strlen(stringToTest);
