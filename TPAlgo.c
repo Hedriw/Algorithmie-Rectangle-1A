@@ -126,71 +126,70 @@ int CalculSize(int **map,int lCursor,int cCursor,int lSize,int cSize)
 }
 
 //SOLUTION 4
-
-tuple _tuple(int position,int height)
-{
-	tuple new_tuple;
-	new_tuple.position = position;
-	new_tuple.height= height;
+tuple* _tuple(int position,int height){
+	tuple* new_tuple = malloc(sizeof(tuple));
+	new_tuple->position = position;
+	new_tuple->height= height;
 	return new_tuple;
 }
-
-stack* _stack(int p_size){
-	stack* stack = malloc(sizeof(stack));
-	stack->array = malloc(p_size*sizeof(tuple));
-	stack->size = p_size;
-	stack->curr_pos = -1;
-	return stack;
-}
-void resize(stack *stack,int new_size){
-	tuple *tmp = malloc(new_size*sizeof(tuple));
-	for(int i = 0;i<=stack->curr_pos;i++){
-		tmp[i] = stack->array[i];
-	}
-	free(stack->array);
-	stack->array = tmp;
-	stack->size = new_size;
-}
-int _isEmpty(stack *stack){
-	if(stack!=NULL){
-		if(stack->curr_pos==-1) return 1;
-	}
-	return 0;
-}
-tuple _pop(stack* stack){
-	if(!_isEmpty(stack)){
-		stack->curr_pos--;
-		return stack->array[stack->curr_pos+1];
-	}
-	return _tuple(0,0);
-}
-int _push(stack* stack, int position,int height){
-	if(stack!=NULL){
-		if(stack->curr_pos+1>=stack->size){
-			int new_size = stack->size * 2;
-			resize(stack,new_size);
-		}
-		stack->array[stack->curr_pos+1]=_tuple(position,height);
-		stack->curr_pos++;
-	}
-}
-
-int TupleSize(tuple t,int currentPosition)
-{
+int TupleSize(tuple t,int currentPosition){
 	return  (currentPosition-t.position)*t.height;
 }
-void print_stack(stack* stack){
-	if(stack!=NULL){
-		printf("[ ");
-		for(int i = 0;i<=stack->curr_pos;i++){
-			printf("Pos:%i Height:%i ",stack->array[i].position,stack->array[i].height);
-		}
-		printf("]\n");
-	}
+cell* _cell(int position,int height,cell* next){
+	cell* new_cell = malloc(sizeof(cell));
+	new_cell->tuple = _tuple(position,height);
+	new_cell->next = next;
+	return new_cell;
 }
-
-int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int currentColumnSize,tuple *columCoord,tuple* rectSize)
-{
+void free_cell(cell* c){
+	if(c->tuple != NULL)
+	{
+		free(c->tuple);
+	}
+	free(c);
+}
+void AddHeadList(cell** currentList, int position,int height){
+  cell* head = _cell(position,height,*currentList);
+  *currentList = head;
+}
+void DeleteHead(cell** list){
+  if(*list!=NULL)
+    {
+			cell* temp=(*list);
+			*list = (*list)->next;
+			free_cell(temp);
+    }
+}
+stack* _stack(){
+  stack* stack = malloc(sizeof(stack));
+  stack->linkedList= NULL;
+  stack->curr_pos = -1;
+  return stack;
+}
+int _isEmpty(stack *stack){
+  if(stack!=NULL){
+    if(stack->curr_pos==-1) return 1;
+  }
+  return 0;
+}
+tuple _pop(stack* stack){
+  if(!_isEmpty(stack)){
+		stack->curr_pos--;
+    tuple temp;
+		temp.position = stack->linkedList->tuple->position;
+		temp.height = stack->linkedList->tuple->height;
+    DeleteHead(&(stack->linkedList));
+		return temp;
+  }
+	return *_tuple(0,0);
+}
+void _push(stack* stack, int position,int height){
+  if(stack!=NULL){
+      AddHeadList(&(stack->linkedList),position,height);
+      stack->curr_pos++;
+  }
+}
+int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int currentColumnSize,tuple *columCoord,tuple* rectSize){
 	int maxSize=0;
 	tuple lastTuple = _pop(stack);
 	tuple currentTuple = lastTuple;
@@ -216,14 +215,13 @@ int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int cu
 
 	return maxSize;
 }
-int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize)
-{
+int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize){
 	int maxSize = 0;
 	int *lineMap =(int *)malloc(width * sizeof(int));
 	//Cleaning residual memory
 	for(int i = 0;i<width;i++)
 	lineMap[i]=0;
-	stack* stack= _stack(width);
+	stack* stack= _stack();
 	for (int line = 0; line < height; line++)
 	{
 		//Calculate lineMap
@@ -247,7 +245,7 @@ int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize)
 			{
 				_push(stack,column,lineMap[column]);
 			}
-			else
+			else if(lastColumnSize > lineMap[column])
 			{
 				tuple tempPosition;
 				tuple tempSize;
@@ -743,29 +741,29 @@ void StartCalculate(char * fileName,char * algoNumber)
 		}
 		case SUCCES_FILE:
 		{
-			tuple coords = _tuple(-1,-1);
-			tuple sizeTuple = _tuple(0,0);
+			tuple* coords = _tuple(-1,-1);
+			tuple* sizeTuple = _tuple(0,0);
 			int size = 0;
 			ReadMap(map,height,width);
 			switch (algoNumber[0]) {
 				case '1' :
 				{
-					size = Solution1(map,width,height,&coords,&sizeTuple);
+					size = Solution1(map,width,height,coords,sizeTuple);
 					break;
 				}
 				case '2' :
 				{
-					size = Solution2(map,width,height,&coords,&sizeTuple);
+					size = Solution2(map,width,height,coords,sizeTuple);
 					break;
 				}
 				case '3':
 				{
-					size = Solution3(map,width,height,&coords,&sizeTuple);
+					size = Solution3(map,width,height,coords,sizeTuple);
 					break;
 				}
 				case '4':
 				{
-					size = Solution4(map,width,height,&coords,&sizeTuple);
+					size = Solution4(map,width,height,coords,sizeTuple);
 					break;
 				}
 				default :
@@ -773,8 +771,8 @@ void StartCalculate(char * fileName,char * algoNumber)
 				exit(1);
 			}
 			printf("Taille max : %i\n", size);
-			printf("Found at Coordinates Column :%i Line:%i)\n",coords.position,coords.height);
-			printf("Size is : (%i x %i)\n",sizeTuple.position,sizeTuple.height);
+			printf("Found at Coordinates Column :%i Line:%i)\n",coords->position,coords->height);
+			printf("Size is : (%i x %i)\n",sizeTuple->position,sizeTuple->height);
 			for (int l = 0; l < height; l++) {
 				free(map[l]);
 				free(map);
