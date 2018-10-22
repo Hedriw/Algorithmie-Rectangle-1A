@@ -131,9 +131,6 @@ tuple* _tuple(int position,int height){
 	new_tuple->height= height;
 	return new_tuple;
 }
-int TupleSize(tuple t,int currentPosition){
-	return  (currentPosition-t.position)*t.height;
-}
 cell* _cell(int position,int height,cell* next){
 	cell* new_cell = malloc(sizeof(cell));
 	new_cell->tuple = _tuple(position,height);
@@ -195,7 +192,7 @@ int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int cu
 	tuple currentTuple = lastTuple;
 	while(currentColumnSize<currentTuple.height)
 	{
-		int size = TupleSize(currentTuple,currentColumn);
+		int size = (currentColumn-currentTuple.position)*currentTuple.height;
 		if(maxSize<size)
 		{
 			maxSize = size;
