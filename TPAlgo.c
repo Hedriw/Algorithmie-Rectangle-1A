@@ -18,8 +18,7 @@
 #define MAX_N_ALGO3 1100
 #define DEFAULT_CSV_NAME "stats.csv"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
 	char * algorithmNumber;
 	char * csvFileName;
 	if(argc==1)
@@ -189,6 +188,7 @@ void _push(stack* stack, int position,int height){
       stack->curr_pos++;
   }
 }
+
 int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int currentColumnSize,tuple *columCoord,tuple* rectSize){
 	int maxSize=0;
 	tuple lastTuple = _pop(stack);
@@ -224,9 +224,9 @@ int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize)
 	stack* stack= _stack();
 	for (int line = 0; line < height; line++)
 	{
+		int lastColumnSize = 0;
 		//Calculate lineMap
-		for (int column = 0; column < width; column++)
-		{
+		for (int column = 0; column < width; column++){
 			if(map[line][column]==BLACK_CASE)
 			{
 				lineMap[column] = 0;
@@ -235,12 +235,6 @@ int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize)
 			{
 				lineMap[column]++;
 			}
-		}
-		//Calculate size current lineMap
-		int lastColumnSize = 0;
-		for(int column = 0;column<width;column++)
-		{
-			//Cas où la hauteur de la nouvelle colonne est plus grande que la précédente
 			if(lastColumnSize < lineMap[column])
 			{
 				_push(stack,column,lineMap[column]);
@@ -261,6 +255,7 @@ int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize)
 			}
 			lastColumnSize = lineMap[column];
 		}
+		//Calculate size current lineMap
 		tuple tempPosition;
 		tuple tempSize;
 		int size = CalculSizeSolution4(stack,width,0,0,&tempPosition,&tempSize);
