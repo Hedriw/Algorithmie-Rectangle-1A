@@ -72,10 +72,12 @@ int main(int argc, char *argv[]){
 
 void displayHelp(char * binName)
 {
+	printf("\n");
 	printf("Usage: %s -f file [AlgorithmNumber]\n\t - Process a grid file using an algorthim number between 1 and 4.\n",binName);
 	printf("Usage: %s -h\n",binName);
 	printf("Usage: %s -s lowerBound upperBound [filename]\n\t - Generates a csv format file with perfs of each algorithms\n",binName);
 	printf("Usage: %s -t\n\t - Tests each algorithm with test grids.\n",binName);
+	printf("\n");
 }
 
 int ** getRandomMap(int height,int width,float percent)
@@ -366,28 +368,6 @@ int Solution3(int *map[], int width, int height,tuple * coords,tuple *sizeTuple)
 	return maxSize;
 }
 //SOLUTION 2
-int CalculMaxSizeCurrentCursor(int ** map, int width, int height, int lCursor, int cCursor, tuple * sizeTuple)
-{
-	//printf("Cursor is at (%i,%i)\n",lCursor,cCursor);
-	int maxSize = 0;
-	for (int line = lCursor; line < height; line++)
-	{
-		for (int column = cCursor; column < width; column++)
-		{
-			int lSize = (line - lCursor + 1);
-			int cSize = (column - cCursor + 1);
-			int size = CalculSize(map,lCursor,cCursor,lSize,cSize);
-			if(size>maxSize)
-			{
-				sizeTuple->height = lSize;
-				sizeTuple->position = cSize;
-				maxSize=size;
-			}
-
-		}
-	}
-	return maxSize;
-}
 
 int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCursor,int cCursor,tuple * sizeTuple)
 {
@@ -447,19 +427,26 @@ int Solution1(int **map, int width, int height, tuple *coords,tuple *sizeTuple)
 	{
 		for (int column = 0; column < width; column++)
 		{
-			int size = CalculMaxSizeCurrentCursor(map, width, height, line, column,sizeTuple);
-			if (size > maxSize)
-			{
-				maxSize = size;
-				tmpWidth = sizeTuple->position;
-				tmpHeight = sizeTuple->height;
-				coords->position = column;
-				coords->height = line;
-			}
+				int size = 0;
+				for (int line2 = line; line2 < height; line2++)
+				{
+					for (int column2 = column; column2 < width; column2++)
+					{
+						int lSize = (line2 - line + 1);
+						int cSize = (column2 - column + 1);
+						int size = CalculSize(map,line,column,lSize,cSize);
+						if(size>maxSize)
+						{
+							sizeTuple->height = lSize;
+							sizeTuple->position = cSize;
+							coords->position = column;
+							coords->height = line;
+							maxSize=size;
+						}
+					}
+				}
 		}
 	}
-	sizeTuple->height =tmpHeight;
-	sizeTuple->position =tmpWidth;
 	return maxSize;
 }
 
