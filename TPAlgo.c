@@ -31,12 +31,17 @@ int main(int argc, char *argv[]){
 			case 'f':
 			if(argc>=3)
 			{
+				int mustShow = 1;
 				algorithmNumber = (argc == 3)? DEFAULT_ALGORITHM : argv[3];
-				StartCalculate(argv[2],algorithmNumber);
+				if(argc == 5)
+				{
+					if (argv[4][0] == ASCII_0) mustShow = 0;
+				}
+				StartCalculate(argv[2],algorithmNumber,mustShow);
 			}
 			break;
 			case 't':
-			if(argc>=2)
+			if(argc>=3)
 			{
 				if(!stringIsNumber(argv[2]))
 				{
@@ -45,13 +50,21 @@ int main(int argc, char *argv[]){
 				}
 				else
 				{
+					int res;
 					switch (strtoimax(argv[2],NULL,10)) {
 						case 1 :
-						//errorTest();
+						if(system("./error_test.sh")==-1)
+						{
+							printf("Error quitting.\n");
+							exit(EXIT_FAILURE);
+						};
 						break;
 						case 2 :
-						//algorithmTest();
-						break;
+						if(system("./algo_test.sh")==-1)
+						{
+							printf("Error quitting.\n");
+							exit(EXIT_FAILURE);
+						};
 						default :
 						printf("Parameter must be 1 or 2\n");
 						exit(EXIT_FAILURE);
@@ -94,7 +107,7 @@ int main(int argc, char *argv[]){
 void displayHelp(char * binName)
 {
 	printf("\n");
-	printf("Usage: %s -f file [AlgorithmNumber]\n\t - Process a grid file using an algorthim number between 1 and 4.\n",binName);
+	printf("Usage: %s -f file [AlgorithmNumber] [showGrid]\n\t - Process a grid file using an algorthim number between 1 and 4.\n",binName);
 	printf("Usage: %s -h\n\t - Displays the help text\n",binName);
 	printf("Usage: %s -s lowerBound upperBound [filename]\n\t - Generates a csv format file with perfs of each algorithms\n",binName);
 	printf("Usage: %s -t numberTest\n\t - numberTest=1 : error_grid file testing\n\t - numberTest=2 : Algortihm testing on test_grid files",binName);
@@ -434,8 +447,8 @@ int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCur
 int Solution2(int **map, int width, int height,tuple *coords,tuple *sizeTuple)
 {
 	int maxSize = 0;
-	int tmpWidth;
-	int tmpHeight;
+	int tmpWidth = 0;
+	int tmpHeight = 0;
 	for (int line = 0; line < height; line++)
 	{
 		for (int column = 0; column < width; column++)
@@ -719,7 +732,7 @@ void startStatistics(int fromSize,int toSize,char * fileName)
 	exit(1);
 }
 
-void StartCalculate(char * fileName,char * algoNumber)
+void StartCalculate(char * fileName,char * algoNumber,int mustShow)
 {
 	//Récupération du dallage dans un fichier
 	int pr = 1;
@@ -760,7 +773,7 @@ void StartCalculate(char * fileName,char * algoNumber)
 			tuple* coords = _tuple(-1,-1);
 			tuple* sizeTuple = _tuple(0,0);
 			int size = 0;
-			ReadMap(map,height,width);
+			if(mustShow == 1) ReadMap(map,height,width);
 			switch (algoNumber[0]) {
 				case '1' :
 				{
@@ -791,9 +804,11 @@ void StartCalculate(char * fileName,char * algoNumber)
 			printf("Size is : (%i x %i)\n",sizeTuple->position,sizeTuple->height);
 			for (int l = 0; l < height; l++) {
 				free(map[l]);
-				free(map);
-				break;
 			}
+			free(coords);
+			free(sizeTuple);
+			free(map);
+			break;
 		}
 	}
 }

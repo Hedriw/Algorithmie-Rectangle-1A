@@ -82,10 +82,11 @@ void startStatistics(int fromSize,int toSize, char* fileName);
  *
  * \param fileName Smallest size to test.
  * \param algoNumber Number of the algorithm to be used.
+ * \param mustShow Boolean value to indicate if the map should be printed.
  * \warning The \p algoNumber must be part of the available algorithms.
  *          The \p fileName must not be NULL.
  */
-void StartCalculate(char * fileName,char * algoNumber);
+void StartCalculate(char * fileName,char * algoNumber, int mustShow);
 
 /**
  * \fn void displayHelp(char * binName);
@@ -95,4 +96,5 @@ void StartCalculate(char * fileName,char * algoNumber);
  * \warning he \p binName must not be NULL.
  */
 void displayHelp(char * binName);
+
 #endif
