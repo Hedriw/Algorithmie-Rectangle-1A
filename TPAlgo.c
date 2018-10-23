@@ -1,6 +1,5 @@
 #include "main.h"
 
-
 #define WHITE_CASE 0
 #define BLACK_CASE 1
 #define ASCII_0 48
@@ -27,7 +26,7 @@ int main(int argc, char *argv[]){
 		exit(EXIT_FAILURE);
 	}
 	int opt;
-	while ((opt = getopt(argc, argv, "hf:ts:")) != -1) {
+	while ((opt = getopt(argc, argv, "hf:t:s:")) != -1) {
 		switch (tolower(opt)) {
 			case 'f':
 			if(argc>=3)
@@ -37,7 +36,29 @@ int main(int argc, char *argv[]){
 			}
 			break;
 			case 't':
-			printf("To do tests\n");
+			if(argc>=2)
+			{
+				if(!stringIsNumber(argv[2]))
+				{
+					printf("/!\\ Parameter must be a number.\n");
+					exit(EXIT_FAILURE);
+				}
+				else
+				{
+					switch (strtoimax(argv[2],NULL,10)) {
+						case 1 :
+						//errorTest();
+						break;
+						case 2 :
+						//algorithmTest();
+						break;
+						default :
+						printf("Parameter must be 1 or 2\n");
+						exit(EXIT_FAILURE);
+						break;
+					}
+				}
+			}
 			break;
 			case 's':
 			if(argc>=4)
@@ -74,10 +95,10 @@ void displayHelp(char * binName)
 {
 	printf("\n");
 	printf("Usage: %s -f file [AlgorithmNumber]\n\t - Process a grid file using an algorthim number between 1 and 4.\n",binName);
-	printf("Usage: %s -h\n",binName);
+	printf("Usage: %s -h\n\t - Displays the help text\n",binName);
 	printf("Usage: %s -s lowerBound upperBound [filename]\n\t - Generates a csv format file with perfs of each algorithms\n",binName);
-	printf("Usage: %s -t\n\t - Tests each algorithm with test grids.\n",binName);
-	printf("\n");
+	printf("Usage: %s -t numberTest\n\t - numberTest=1 : error_grid file testing\n\t - numberTest=2 : Algortihm testing on test_grid files",binName);
+	printf("\n\n");
 }
 
 int ** getRandomMap(int height,int width,float percent)
@@ -125,32 +146,40 @@ int CalculSize(int **map,int lCursor,int cCursor,int lSize,int cSize)
 
 	return 0;
 }
-
 //SOLUTION 4
-tuple* _tuple(int position,int height){
+tuple* _tuple(int position,int height)
+{
 	tuple* new_tuple = malloc(sizeof(tuple));
 	new_tuple->position = position;
 	new_tuple->height= height;
 	return new_tuple;
 }
-cell* _cell(int position,int height,cell* next){
+
+cell* _cell(int position,int height,cell* next)
+{
 	cell* new_cell = malloc(sizeof(cell));
 	new_cell->tuple = _tuple(position,height);
 	new_cell->next = next;
 	return new_cell;
 }
-void free_cell(cell* c){
+
+void free_cell(cell* c)
+{
 	if(c->tuple != NULL)
 	{
 		free(c->tuple);
 	}
 	free(c);
 }
-void AddHeadList(cell** currentList, int position,int height){
+
+void AddHeadList(cell** currentList, int position,int height)
+{
   cell* head = _cell(position,height,*currentList);
   *currentList = head;
 }
-void DeleteHead(cell** list){
+
+void DeleteHead(cell** list)
+{
   if(*list!=NULL)
     {
 			cell* temp=(*list);
@@ -158,19 +187,25 @@ void DeleteHead(cell** list){
 			free_cell(temp);
     }
 }
-stack* _stack(){
+
+stack* _stack()
+{
   stack* stack = malloc(sizeof(stack));
   stack->linkedList= NULL;
   stack->curr_pos = -1;
   return stack;
 }
-int _isEmpty(stack *stack){
+
+int _isEmpty(stack *stack)
+{
   if(stack!=NULL){
     if(stack->curr_pos==-1) return 1;
   }
   return 0;
 }
-tuple _pop(stack* stack){
+
+tuple _pop(stack* stack)
+{
   if(!_isEmpty(stack)){
 		stack->curr_pos--;
     tuple temp;
@@ -181,14 +216,17 @@ tuple _pop(stack* stack){
   }
 	return *_tuple(0,0);
 }
-void _push(stack* stack, int position,int height){
+
+void _push(stack* stack, int position,int height)
+{
   if(stack!=NULL){
       AddHeadList(&(stack->linkedList),position,height);
       stack->curr_pos++;
   }
 }
 
-int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int currentColumnSize,tuple *columCoord,tuple* rectSize){
+int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int currentColumnSize,tuple *columCoord,tuple* rectSize)
+{
 	int maxSize=0;
 	tuple lastTuple = _pop(stack);
 	tuple currentTuple = lastTuple;
@@ -214,7 +252,9 @@ int CalculSizeSolution4(stack* stack,int currentColumn,int lastColumnSize,int cu
 
 	return maxSize;
 }
-int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize){
+
+int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize)
+{
 	int maxSize = 0;
 	int *lineMap =(int *)malloc(width * sizeof(int));
 	//Cleaning residual memory
@@ -270,7 +310,6 @@ int Solution4(int *map[], int width, int height,tuple * coords,tuple * rectSize)
 	free(lineMap);
 	return maxSize;
 }
-
 //SOLUTION 3
 int CalculSizeSolution3(int *lineMap,int currentColumn,int maxHeight,tuple *columnCoord,tuple* rectSize)
 {
@@ -367,7 +406,6 @@ int Solution3(int *map[], int width, int height,tuple * coords,tuple *sizeTuple)
 	free(lineMap);
 	return maxSize;
 }
-//SOLUTION 2
 
 int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCursor,int cCursor,tuple * sizeTuple)
 {
@@ -449,8 +487,6 @@ int Solution1(int **map, int width, int height, tuple *coords,tuple *sizeTuple)
 	}
 	return maxSize;
 }
-
-// FILEREAD
 
 int GetLineSize(FILE* file)
 {
@@ -682,6 +718,7 @@ void startStatistics(int fromSize,int toSize,char * fileName)
 	fclose(csvFile);
 	exit(1);
 }
+
 void StartCalculate(char * fileName,char * algoNumber)
 {
 	//Récupération du dallage dans un fichier
