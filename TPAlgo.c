@@ -12,11 +12,13 @@
 #define ERROR_SIZE_VALUES_ZERO -4
 #define SUCCES_FILE 1
 #define DEFAULT_ALGORITHM "1"
-#define MAX_N_ALGO1 200
-#define MAX_N_ALGO2 500
-#define MAX_N_ALGO3 1100
-#define DEFAULT_CSV_NAME "stats.csv"
+#define MAX_T_ALGO1 1
+#define MAX_T_ALGO2 0.5
+#define MAX_T_ALGO3 0.1
+#define MAX_T_ALGO4 0.1
 
+#define DEFAULT_CSV_NAME "stats.csv"
+	// 1 0.5 0.1 0.1
 int main(int argc, char *argv[]){
 	char * algorithmNumber;
 	char * csvFileName;
@@ -420,7 +422,7 @@ int Solution3(int *map[], int width, int height,tuple * coords,tuple *sizeTuple)
 	return maxSize;
 }
 
-int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCursor,int cCursor,tuple * sizeTuple)
+int CalculMaxSizeCurrentCursorOptimized(int * map[],int width,int height,int lCursor,int cCursor,tuple * sizeTuple)
 {
 	int maxSize = 0;
 	int one_cumul = 0;
@@ -430,9 +432,12 @@ int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCur
 		{
 			int lSize = (line - lCursor + 1);
 			int cSize = (column - cCursor + 1);
-			int size = CalculSize(map,lCursor,cCursor,lSize,cSize);
-			if(size == 0)
-			width = column;
+			int size =0;
+			if(map[line][column] == 1)
+				width = column;
+			else{
+					size =lSize *cSize;
+				}
 			if(size>maxSize)
 			{
 				sizeTuple->height = lSize;
@@ -453,6 +458,7 @@ int Solution2(int **map, int width, int height,tuple *coords,tuple *sizeTuple)
 	{
 		for (int column = 0; column < width; column++)
 		{
+			if(map[line][column]==1) continue;
 			int size = CalculMaxSizeCurrentCursorOptimized(map, width, height, line, column, sizeTuple);
 			if (size > maxSize)
 			{
@@ -667,66 +673,76 @@ void startStatistics(int fromSize,int toSize,char * fileName)
 {
 	FILE* csvFile;
 	csvFile = fopen(fileName,"w");
-	fputs("mapSize;Algo1;Algo2;Algo3;Algo4\n",csvFile);
+	int doSolution1 = 1;
+	int doSolution2 = 1;
+	int doSolution3 = 1;
+	int doSolution4 = 1;
+	//fputs("mapSize;Algo1;Algo2;Algo3;Algo4\n",csvFile);
 	double timeTaken1,timeTaken2,timeTaken3,timeTaken4;
 	for(int i = fromSize;i<=toSize;i++)
 	{
 		tuple finalSizeTuple;
 		tuple finalCoords;
-		int ** randMap = getRandomMap(i,i,80);
-		ReadMap(randMap,i,i);
-		printf("\n\n");
-		if(i<=MAX_N_ALGO1)
+		int ** randMap = getRandomMap(i,i,50);
+		if(doSolution1!=0)
 		{
 			clock_t time1;
 			time1 = clock();
 			Solution1(randMap,i,i,&finalCoords,&finalSizeTuple);
 			time1 = clock() - time1;
 			timeTaken1 = ((double)time1)/CLOCKS_PER_SEC;
+			if(timeTaken1 > MAX_T_ALGO1 )
+			{
+				doSolution1 = 0;
+			}
 		}
 		else
-		timeTaken1 = -1;
-		if(i<=MAX_N_ALGO2)
+			timeTaken1 = -1;
+		if(doSolution2!=0)
 		{
 			clock_t time2;
 			time2 = clock();
 			Solution2(randMap,i,i,&finalCoords,&finalSizeTuple);
 			time2 = clock() - time2;
 			timeTaken2 = ((double)time2)/CLOCKS_PER_SEC;
+			if(timeTaken2 > MAX_T_ALGO2 )
+			{
+				doSolution2 = 0;
+			}
 		}
 		else
-		timeTaken2 = -1;
-		if(i<=MAX_N_ALGO3)
+			timeTaken2 = -1;
+		if(doSolution3!=0)
 		{
 			clock_t time3;
 			time3 = clock();
 			Solution3(randMap,i,i,&finalCoords,&finalSizeTuple);
 			time3 = clock() - time3;
 			timeTaken3 = ((double)time3)/CLOCKS_PER_SEC;
+			if(timeTaken3 > MAX_T_ALGO3 )
+			{
+				doSolution3 = 0;
+			}
 		}
 		else
-		timeTaken3 = -1;
-		clock_t time4;
-		time4 = clock();
-		Solution4(randMap,i,i,&finalCoords,&finalSizeTuple);
-		time4 = clock() - time4;
-		timeTaken4 = ((double)time4)/CLOCKS_PER_SEC;
-		if(i>=MAX_N_ALGO3)
+			timeTaken3 = -1;
+		if(doSolution4!=0)
 		{
-			fprintf(csvFile,"%i;;;;%g;\n",i,timeTaken4);
-		}
-		else if(i>=MAX_N_ALGO3)
-		{
-			fprintf(csvFile,"%i;;;%g;%g;\n",i,timeTaken3,timeTaken4);
-		}
-		else if (i>=MAX_N_ALGO1)
-		{
-			fprintf(csvFile,"%i;;%g;%g;%g;\n",i,timeTaken2,timeTaken3,timeTaken4);
+			clock_t time4;
+			time4 = clock();
+			Solution4(randMap,i,i,&finalCoords,&finalSizeTuple);
+			time4 = clock() - time4;
+			timeTaken4 = ((double)time4)/CLOCKS_PER_SEC;
+			if(timeTaken4 > MAX_T_ALGO4 )
+			{
+				doSolution4 = 0;
+			}
 		}
 		else
-		{
-			fprintf(csvFile,"%i;%g;%g;%g;%g;\n",i,timeTaken1,timeTaken2,timeTaken3,timeTaken4);
-		}
+			timeTaken4 = -1;
+		if(doSolution1 == 0 && doSolution2 == 0 && doSolution3 == 0 && doSolution4 ==0)
+			break;
+		fprintf(csvFile,"%i;%f;%f;%f;%f;\n",i,timeTaken1,timeTaken2,timeTaken3,timeTaken4);
 	}
 	fclose(csvFile);
 	exit(1);

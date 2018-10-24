@@ -47,5 +47,5 @@ int Solution2(int **map, int widht, int height,tuple *coords,tuple *sizeTuple);
  * \prec \p width,\p height,\p lCursor and \p cCursor must be positive.
  *          The \p map and \p sizeTuple must not be NULL.
  */
-int CalculMaxSizeCurrentCursorOptimized(int ** map,int width,int height,int lCursor,int cCursor,tuple * sizeTuple);
+int CalculMaxSizeCurrentCursorOptimized(int * map[],int width,int height,int lCursor,int cCursor,tuple * sizeTuple);
 #endif
