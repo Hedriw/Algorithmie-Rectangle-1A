@@ -14,7 +14,7 @@
 #define DEFAULT_ALGORITHM "1"
 #define MAX_T_ALGO1 1
 #define MAX_T_ALGO2 0.5
-#define MAX_T_ALGO3 0.1
+#define MAX_T_ALGO3 0.4
 #define MAX_T_ALGO4 0.1
 
 #define DEFAULT_CSV_NAME "stats.csv"
@@ -683,7 +683,7 @@ void startStatistics(int fromSize,int toSize,char * fileName)
 	{
 		tuple finalSizeTuple;
 		tuple finalCoords;
-		int ** randMap = getRandomMap(i,i,50);
+		int ** randMap = getRandomMap(i,i,90);
 		if(doSolution1!=0)
 		{
 			clock_t time1;
