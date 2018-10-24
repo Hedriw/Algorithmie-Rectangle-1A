@@ -10,5 +10,4 @@ do
   ./bin -f "$entry" 3 0
   echo "Algorithm n4"
   ./bin -f "$entry" 4 0
-  echo "\n\n"
 done
